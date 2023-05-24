@@ -41,6 +41,17 @@ def get_user_by_email():
     else:
         return jsonify({"error": "User not found."})
 
+# Ruta para obtener un usuario por email 
+@app.route('/user-by-username', methods=['GET'])
+def get_user_by_user():
+    user = request.args.get('user')
+    username = collection.find_one({'nombre_u': user})
+    if username:
+        username['_id'] = str(username['_id'])
+        return jsonify(username)
+    else:
+        return jsonify({"error": "User not found."})
+
 # Ruta para crear un nuevo usuario
 @app.route('/create', methods=['POST'])
 def create_user():
@@ -58,6 +69,32 @@ def create_user():
     collection.insert_one(new_user)
     return jsonify({'message': 'User created successfully'})
 
+# Ruta para crear datos usuario
+@app.route('/createUs', methods=['POST'])
+def create_usu():
+    userID = request.json['userID']
+    nombre_u = request.json['nombre_u']
+    nombre_com = request.json['nombre_com']
+    Fecha_N = request.json['Fecha_N']
+    ci = request.json['ci']
+    profilePic = request.json['profilePic']
+    last_event = collection2.find_one(sort=[('_id', pymongo.DESCENDING)])
+    if last_event:
+        new_id = last_event['_id'] + 1
+    else:
+        new_id = 1
+    new_user = {
+        "_id":new_id,
+        "userID":userID,
+        "profilePic":profilePic,
+        "nombre_u": nombre_u,
+        "nombre_com": nombre_com,
+        "Fecha_N": datetime.strptime(Fecha_N, '%Y-%m-%d').date(),
+        "ci":ci
+    }
+    collection.insert_one(new_user)
+    return jsonify({'message': 'User created successfully'})
+
 # Ruta para crear un nuevo evento
 @app.route('/create_event', methods=['POST'])
 def create_event():
@@ -66,7 +103,7 @@ def create_event():
     pais = request.json['pais']
     ciudad = request.json['ciudad']
     categoria = request.json['categoria']
-
+    lugar = request.json['lugar']
     last_event = collection2.find_one(sort=[('_id', pymongo.DESCENDING)])
     if last_event:
         new_id = last_event['cod_E'] + 1
@@ -78,13 +115,12 @@ def create_event():
         new_event = {
             "cod_E": new_id,
             "nombre": nombre,
-            "fechaHora": {
-                "$date": datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat()
-            },
+            "fechaHora": datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat(),
             "pais": pais,
             "ciudad": ciudad,
             "artista": artista,
-            "categoria": categoria
+            "categoria": categoria,
+            "lugar":lugar
         }
     elif categoria == 'Deportes':
         equipo1 = request.json['equipo1']
@@ -92,25 +128,23 @@ def create_event():
         new_event = {
             "cod_E": new_id,
             "nombre": nombre,
-            "fechaHora": {
-                "$date": datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat()
-            },
+            "fechaHora":datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat(),
             "pais": pais,
             "ciudad": ciudad,
             "equipo1": equipo1,
             "equipo2": equipo2,
-            "categoria": categoria
+            "categoria": categoria,
+            "lugar":lugar
         }
     elif categoria == 'Convencion':
         new_event = {
             "cod_E": new_id,
             "nombre": nombre,
-            "fechaHora": {
-                "$date": datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat()
-            },
+            "fechaHora": datetime.strptime(fechaHora, '%Y-%m-%dT%H:%M').isoformat(),
             "pais": pais,
             "ciudad": ciudad,
-            "categoria": categoria
+            "categoria": categoria,
+            "lugar":lugar
         }
     else:
         return jsonify({'error': 'Categoría inválida'}), 400
@@ -142,6 +176,16 @@ def update_user():
     else:
         return jsonify({'message': 'El usuario no existe'})
 
+# Ruta para obtener un usuario por id 
+@app.route('/usersget', methods=['GET'])
+def get_userid():
+    idu = request.args.get('idu')
+    user = collection1.find_one({'userID': idu})
+    if user:
+        user['_id'] = str(user['_id'])
+        return jsonify(user)
+    else:
+        return jsonify({"error": "User not found."})
 
 # Ruta para eliminar un usuario existente
 @app.route('/usersd', methods=['DELETE'])
